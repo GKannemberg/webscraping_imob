@@ -1,9 +1,10 @@
 import scrapy
 import googlemaps
-import pymongo
+from pymongo import MongoClient
 from datetime import datetime
 
 CITY_NAME = 'Cascavel'
+MONGOCONECTION = 'mongodb+srv://gkannemberg:<Temporaria123>@cluster0.rnikrwi.mongodb.net/'
 
 class ImoveisSpider(scrapy.Spider):
     name = 'imoveis'
@@ -15,6 +16,7 @@ class ImoveisSpider(scrapy.Spider):
         for page_number in range(1, 64):  # o site possui 64 paginas por conta disso o for passa por todas
             url = self.base_url.format(page_number)
             yield scrapy.Request(url, callback=self.parse)
+
 
     def parse(self, response):
         for imovel in response.css('div.anuncio'):
@@ -28,6 +30,22 @@ class ImoveisSpider(scrapy.Spider):
                 'localizacao': localizacao,
             }
 
+
+def save_in_mongodb(parsed_response):
+    client = MongoClient(MONGOCONECTION, 27017)
+    db = client.scraping
+
+    colection_imobiliarias = db['imobiliarias']
+    colection_imobiliarias.insert_one(parsed_response)
+
+
+def main():
+    imoveis_spider = ImoveisSpider()
+    response = imoveis_spider.start_requests()
+    parsed_response = ImoveisSpider.parse(imoveis_spider, response)
+    save_in_mongodb(parsed_response)
+
+main()
 # def scrape_data():
 #     scraped_data = {}
 
