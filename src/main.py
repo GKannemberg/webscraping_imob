@@ -26,6 +26,7 @@ def enrich_address(scraped_data):
 def save_address_mongo(enriched_data):
 
     pymongo.save(enriched_data)
+    
 
 
 def process():
@@ -40,6 +41,6 @@ def process():
 
 
 
-process()
+# process()
 
     
