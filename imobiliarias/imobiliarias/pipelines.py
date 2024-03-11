@@ -42,5 +42,8 @@ def standartize_title(adapter):
 def normalize_price(adapter):
     price_string = adapter.get("price")
 
+    if "\\n\\t\\t\\t\\t\\t\\t\\t\\t\\t\\t\\t\\t\\t\\t\\t" in price_string:
+        price_string = price_string.replace("\\n\\t\\t\\t\\t\\t\\t\\t\\t\\t\\t\\t\\t\\t\\t\\t", "")
+
     price_int = int(price_string.split(",")[0].replace(".", ""))
     adapter["price"] = price_int
