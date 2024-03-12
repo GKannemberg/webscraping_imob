@@ -1,0 +1,22 @@
+{
+    "Apartamento Padrão": {
+        "category": "apartment",
+        "sub_category": "standard"
+    },
+    "Casa Padrão": {
+        "category": "apartment",
+        "sub_category": "standard"
+    },
+    "Comercial Edificio Co...": {
+        "category": "apartment",
+        "sub_category": "standard"
+    },
+    "Terreno Lote Urbano": {
+        "category": "apartment",
+        "sub_category": "standard"
+    },
+    "Rural Sítio": {
+        "category": "apartment",
+        "sub_category": "standard"
+    },
+}

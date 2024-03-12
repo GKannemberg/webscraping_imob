@@ -7,43 +7,84 @@
 # useful for handling different item types with a single interface
 from itemadapter import ItemAdapter
 
-title_translation = {
-    "Apartamento Padrão": {"category": "apartment", "sub_category": "standard"},
-    "Casa Padrão": {"category": "apartment", "sub_category": "standard"},
-    "Comercial Edificio Co...": {"category": "apartment", "sub_category": "standard"},
-    "Terreno Lote Urbano": {"category": "apartment", "sub_category": "standard"},
-    "Rural Sítio": {"category": "apartment", "sub_category": "standard"},
-}
+# import config_database
+from unidecode import unidecode
 
 
-class ImobiliariasPipeline:
+class RealEstatePipeline:
+
+    def __init__(self):
+
+        self.DB_HOST = "localhost"  #'127.0.0.1'
+        self.DB_NAME = "postgres"
+        self.DB_USER = "postgres"
+        self.DB_PASS = "postgres"
+
+        self.create_connection()
+        self.create_table()
+
+    def create_connection(self):
+        self.conn = psycopg2.connect(dbname=self.DB_NAME, user=self.DB_USER, password=self.DB_PASS, host=self.DB_HOST)
+        self.cur = self.conn.cursor()
+
     def process_item(self, item, spider):
-        adapter = ItemAdapter(item)
-
-        standartize_title(adapter)
-
-        normalize_price(adapter)
-
-        items["title"] = title
-        items["price"] = price
-        items["bairro"] = bairro
-
+        self.normalize_data(item)
+        self.store_db(item)
         return item
 
+    def store_db(self, item):
+        self.cur.execute(
+            """
+            INSERT INTO real_estate_ativa
+                (price,
+                neighborhood,
+                type,
+                rooms,
+                suites,
+                bathrooms,
+                garages,
+                total_area,
+                private_area)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+            """,
+            (
+                item["price"][0],
+                item["neighborhood"][0],
+                item["type"][0],
+                item["rooms"][0],
+                item["suites"][0],
+                item["bathrooms"][0],
+                item["garages"][0],
+                item["total_area"][0],
+                item["private_area"][0],
+            ),
+        )
+        self.conn.commit()
 
-def standartize_title(adapter):
-    title_string = adapter.get("title")
-    dict_translation = title_translation[title_string]
+    def normalize_data(self, item):
+        self.normalize_title(item)
 
-    adapter["category"] = dict_translation["category"]
-    adapter["sub_category"] = dict_translation["sub_category"]
+        self.normalize_price(item)
 
+        self.normalize_bairro(item)
 
-def normalize_price(adapter):
-    price_string = adapter.get("price")
+    def normalize_title(self, item):
+        title_string = item.get("title")
 
-    if "\\n\\t\\t\\t\\t\\t\\t\\t\\t\\t\\t\\t\\t\\t\\t\\t" in price_string:
-        price_string = price_string.replace("\\n\\t\\t\\t\\t\\t\\t\\t\\t\\t\\t\\t\\t\\t\\t\\t", "")
+        item["title"] = unidecode(title_string.lower())
 
-    price_int = int(price_string.split(",")[0].replace(".", ""))
-    adapter["price"] = price_int
+    def normalize_price(self, item):
+        price_string = item.get("price")
+
+        if "\\n\\t\\t\\t\\t\\t\\t\\t\\t\\t\\t\\t\\t\\t\\t\\t" in price_string:
+            price_string = price_string.replace("\\n\\t\\t\\t\\t\\t\\t\\t\\t\\t\\t\\t\\t\\t\\t\\t", "")
+
+        if "\t\t\t\t\t\t\t\t\t\t\t\t\t\t" in price_string:
+            price_string = price_string.replace("\t\t\t\t\t\t\t\t\t\t\t\t\t\t", "")
+
+        item["price"] = float(price_string.split(",")[0].replace(".", ""))
+
+    def normalize_bairro(self, item):
+        bairro_string = item.get("bairro")
+
+        item["bairro"] = str(bairro_string.split(" ")[0].replace("Bairro:", ""))
