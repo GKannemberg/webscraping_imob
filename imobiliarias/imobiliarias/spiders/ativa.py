@@ -24,6 +24,11 @@ class ImobiliariaAtiva(scrapy.Spider):
             bedrooms = imovel.css("ul.imo-itens li:first-child::text").get()
             bathrooms = imovel.css("ul > li:nth-child(2)::text").get()
             garages = imovel.css("ul > li:nth-child(3)::text").get()
+            
+            
+            items["title"] = title
+            items["price"] = price
+            items["neighborhood"] = neighborhood
 
             if allotment_area:
                 items["allotment_area"] = allotment_area
@@ -37,10 +42,6 @@ class ImobiliariaAtiva(scrapy.Spider):
             if garages:
                 items["garages"] = garages
 
-            items["title"] = title
-            items["price"] = price
-            items["neighborhood"] = neighborhood
-
             yield items
 
         next_page = response.xpath("//li[9]/a/@href").get()
@@ -50,3 +51,5 @@ class ImobiliariaAtiva(scrapy.Spider):
             yield scrapy.Request(response.urljoin(next_page_url))
 
             # yield response.follow(next_page_url, callback= self.parse), another method for turn pages.
+    
+    
