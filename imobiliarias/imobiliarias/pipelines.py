@@ -13,45 +13,36 @@ import pymongo
 
 class ImobiliariasPipeline():
     
-    def __init__(self):
-        self.conn = pymongo.MongoClient(
-            'localhost',
-            27017
-        )
-        db = self.conn['imob_ativa']
-        self.collection = db['imob_tb']         
-        
+    # Initialize the MongoDB pipeline with your database and collection names
+    def __init__(self, mongo_uri, mongo_db, mongo_collection):
+        self.mongo_uri = mongo_uri
+        self.mongo_db = mongo_db
+        self.mongo_collection = mongo_collection
+
+    # Open the MongoDB connection in the open_spider method
+    @classmethod
+    def from_crawler(cls, crawler):
+        # Get the MongoDB connection information from the settings
+        mongo_uri = crawler.settings.get('MONGO_URI')
+        mongo_db = crawler.settings.get('MONGO_DB')
+        mongo_collection = crawler.settings.get('MONGO_COLLECTION')
+
+        # Initialize the pipeline with the MongoDB connection information
+        return cls(mongo_uri, mongo_db, mongo_collection)
+
+    # Connect to the MongoDB database and collection in the open_spider method
+    def open_spider(self, spider):
+        # Create a connection to the MongoDB server
+        self.client = MongoClient(self.mongo_uri)
+
+        # Get a reference to the database and collection
+        self.db = self.client[self.mongo_db]
+        self.collection = self.db[self.mongo_collection]
+
+    # Save the scraped data to the MongoDB database and collection in the process_item method
     def process_item(self, item, spider):
-        
-        self.collection.insert_many(dict(item))
+        # Insert the item into the MongoDB collection
+        self.collection.insert_one(dict(item))
+
+        # Return the item for further processing
         return item
-
-    # def store_db(self, item):
-    #     self.cur.execute(
-    #         """
-    #         INSERT INTO real_estate_ativa
-    #             (price,
-    #             neighborhood,
-    #             type,
-    #             rooms,
-    #             suites,
-    #             bathrooms,
-    #             garages,
-    #             total_area,
-    #             private_area)
-    #             VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
-    #         """,
-    #         (
-    #             item["price"][0],
-    #             item["neighborhood"][0],
-    #             item["type"][0],
-    #             item["rooms"][0],
-    #             item["suites"][0],
-    #             item["bathrooms"][0],
-    #             item["garages"][0],
-    #             item["total_area"][0],
-    #             item["private_area"][0],
-    #         ),
-    #     )
-    #     self.conn.commit()
-
