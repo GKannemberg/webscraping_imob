@@ -1,7 +1,7 @@
 import scrapy
 from unidecode import unidecode
-
 from ..items import ImobiliariasItem
+
 
 amenities = ["bedrooms", "bathrooms", "garages"]
 
@@ -12,7 +12,7 @@ class ImobiliariaAtiva(scrapy.Spider):
 
     def parse(self, response):
         imoveis = response.css("#property-listing .col-lg-3")
-        item = ImobiliariasItem()
+        items = ImobiliariasItem()
 
         for imovel in imoveis:
             title = imovel.css("div h3 a::text").get()
@@ -26,22 +26,22 @@ class ImobiliariaAtiva(scrapy.Spider):
             garages = imovel.css("ul > li:nth-child(3)::text").get()
 
             if allotment_area:
-                item["allotment_area"] = allotment_area
+                items["allotment_area"] = allotment_area
 
             if bedrooms:
-                item["bedrooms"] = bedrooms
+                items["bedrooms"] = bedrooms
 
             if bathrooms:
-                item["bathrooms"] = allotment_area
+                items["bathrooms"] = allotment_area
 
             if garages:
-                item["garages"] = garages
+                items["garages"] = garages
 
-            item["title"] = title
-            item["price"] = price
-            item["neighborhood"] = neighborhood
+            items["title"] = title
+            items["price"] = price
+            items["neighborhood"] = neighborhood
 
-            yield self.normalize_data(self, item)
+            yield items
 
         next_page = response.xpath("//li[9]/a/@href").get()
 
