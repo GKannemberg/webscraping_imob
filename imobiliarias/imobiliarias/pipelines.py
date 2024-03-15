@@ -5,41 +5,30 @@
 
 
 # useful for handling different item types with a single interface
-from itemadapter import ItemAdapter
-
+import logging
 import pymongo
 
-class ImobiliariasPipeline():
-    
-    
-    def __init__(self, mongo_uri, mongo_db, mongo_collection):
+class ImobiliariasPipeline:
+    def __init__(self, mongo_uri, mongo_db):
         self.mongo_uri = mongo_uri
         self.mongo_db = mongo_db
-        self.mongo_collection = mongo_collection
 
-    
     @classmethod
     def from_crawler(cls, crawler):
-        
-        mongo_uri = crawler.settings.get('MONGO_URI')
-        mongo_db = crawler.settings.get('MONGO_DB')
-        mongo_collection = crawler.settings.get('MONGO_COLLECTION')
+        return cls(
+            mongo_uri=crawler.settings.get('MONGO_URI'),
+            mongo_db=crawler.settings.get('MONGO_DATABASE')
+        )
 
-        
-        return cls(mongo_uri, mongo_db, mongo_collection)
-
-   
     def open_spider(self, spider):
-        
-        self.client = MongoClient(self.mongo_uri)
-
-       
+        self.client = pymongo.MongoClient(self.mongo_uri)
         self.db = self.client[self.mongo_db]
-        self.collection = self.db[self.mongo_collection]
 
-    
+    def close_spider(self, spider):
+        self.client.close()
+
     def process_item(self, item, spider):
-        
-        self.collection.insert_one(dict(item))
-
+        collection_name = spider.name
+        self.db[collection_name].insert_one(dict(item))
+        logging.debug(f"Inserted item {item} into collection {collection_name}")
         return item

@@ -65,6 +65,8 @@ ROBOTSTXT_OBEY = True
 ITEM_PIPELINES = {
     "imobiliarias.pipelines.ImobiliariasPipeline": 300,
 }
+MONGO_URI = 'mongodb+srv://gkannemberg:Temporaria123@cluster0.rnikrwi.mongodb.net/'
+MONGO_DATABASE = 'imobiliarias'
 
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See https://docs.scrapy.org/en/latest/topics/autothrottle.html
