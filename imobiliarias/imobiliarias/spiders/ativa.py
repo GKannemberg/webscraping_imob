@@ -37,7 +37,7 @@ class ImobiliariaAtiva(scrapy.Spider):
                 items["bedrooms"] = bedrooms
 
             if bathrooms:
-                items["bathrooms"] = allotment_area
+                items["bathrooms"] = bathrooms
 
             if garages:
                 items["garages"] = garages
